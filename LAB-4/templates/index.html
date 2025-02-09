@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Q&A Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Playfair Display', 'Times New Roman', serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fff9c4 0%, #ffd54f 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #f57f17;
+            margin-bottom: 2.5rem;
+            font-size: 3rem;
+            font-family: 'Playfair Display', serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #ffd54f, transparent);
+            margin: 10px auto;
+        }
+
+        .upload-section, .question-section {
+            background: linear-gradient(to right bottom, rgba(255, 253, 231, 0.9), rgba(255, 248, 225, 0.9));
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 213, 79, 0.3);
+        }
+
+        .upload-section:hover, .question-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        h3 {
+            color: #f9a825;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        h3 i {
+            color: #fbc02d;
+            font-size: 1.8rem;
+        }
+
+        .file-input-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        #pdfFile {
+            flex: 1;
+            padding: 1rem;
+            border: 2px dashed #fdd835;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        #pdfFile:hover {
+            border-color: #f9a825;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .question-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        #question {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid rgba(253, 216, 53, 0.5);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Lato', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        #question:focus {
+            outline: none;
+            border-color: #fdd835;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 15px rgba(253, 216, 53, 0.2);
+        }
+
+        button {
+            background: linear-gradient(45deg, #fdd835, #fbc02d);
+            color: #333;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Lato', sans-serif;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #fbc02d, #f9a825);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(253, 216, 53, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #response {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 15px;
+            background: linear-gradient(to right bottom, rgba(255, 253, 231, 0.9), rgba(255, 248, 225, 0.9));
+            min-height: 100px;
+            border-left: 6px solid #fdd835;
+            position: relative;
+            display: none;
+            font-family: 'Lato', sans-serif;
+            line-height: 1.6;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        #response.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1.5rem 0;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading p {
+            margin-top: 1rem;
+            color: #f9a825;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #fff9c4;
+            border-top: 5px solid #fdd835;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(253, 216, 53, 0.2);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-message {
+            text-align: center;
+            color: #f9a825;
+            margin-top: 1rem;
+            font-weight: bold;
+            font-family: 'Lato', sans-serif;
+            display: none;
+            font-size: 1.1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .status-message.error {
+            color: #f57f17;
+            background: rgba(255, 235, 238, 0.8);
+        }
+
+        .status-message.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .file-input-container {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Q&A Assistant</h1>
+
+        <div class="upload-section">
+            <h3><i class="fas fa-file-pdf"></i> Upload PDF</h3>
+            <div class="file-input-container">
+                <input type="file" id="pdfFile" accept=".pdf">
+                <button onclick="uploadPDF()">
+                    <i class="fas fa-upload"></i>
+                    Upload
+                </button>
+            </div>
+            <div class="status-message" id="uploadStatus"></div>
+        </div>
+
+        <div class="question-section">
+            <h3><i class="fas fa-question-circle"></i> Ask a Question</h3>
+            <div class="question-input">
+                <input type="text" id="question" placeholder="Type your question here...">
+                <button onclick="askQuestion()">
+                    <i class="fas fa-paper-plane"></i>
+                    Ask
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const loading = document.getElementById('loading');
+
+            if (!fileInput.files[0]) {
+                showStatus('Please select a file first', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pdf', fileInput.files[0]);
+
+            loading.classList.add('active');
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.error) {
+                    showStatus(result.error, true);
+                } else {
+                    showStatus(result.message);
+                }
+            } catch (error) {
+                showStatus('Error uploading file', true);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            const responseDiv = document.getElementById('response');
+            const loading = document.getElementById('loading');
+
+            if (!question) {
+                showStatus('Please enter a question', true);
+                return;
+            }
+
+            loading.classList.add('active');
+            responseDiv.classList.remove('active');
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                const result = await response.json();
+
+                responseDiv.innerHTML = result.answer || result.error;
+                responseDiv.classList.add('active');
+            } catch (error) {
+                responseDiv.innerHTML = 'Error getting response';
+                responseDiv.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('error');
+            if (isError) {
+                statusDiv.classList.add('error');
+            }
+            statusDiv.classList.add('active');
+            setTimeout(() => {
+                statusDiv.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
