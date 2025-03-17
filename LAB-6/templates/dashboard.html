@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #fffdf0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            max-width: 800px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .card-header {
+            background-color: #ffb300;
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        .card-body {
+            padding: 20px;
+            background-color: white;
+        }
+        .btn-primary {
+            background-color: #ffb300;
+            border-color: #ffb300;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #ffa000;
+            border-color: #ffa000;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background-color: #ff5252;
+            border-color: #ff5252;
+            transition: all 0.3s;
+        }
+        .btn-danger:hover {
+            background-color: #ff1744;
+            border-color: #ff1744;
+            transform: translateY(-2px);
+        }
+        .welcome-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #ff8f00;
+            font-weight: 700;
+        }
+        h4 {
+            margin: 0;
+            color: white;
+        }
+        .badge {
+            font-size: 14px;
+            padding: 8px 12px;
+            margin-left: 10px;
+            border-radius: 20px;
+        }
+        .grade-badge {
+            font-size: 18px;
+            padding: 8px 15px;
+            border-radius: 50px;
+            margin-left: 15px;
+            background-color: #ffc107;
+            color: #212121;
+        }
+        .performance-stat {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+        .stat-icon {
+            font-size: 24px;
+            color: #ffc107;
+            margin-right: 15px;
+        }
+        .logout-btn {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="welcome-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-user-circle mr-2"></i>Welcome, {{ name }}!</h2>
+                <div>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-primary">
+                        <i class="fas fa-key mr-2"></i>Change Password
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger logout-btn">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-chart-line mr-2"></i>Your Performance</h4>
+            </div>
+            <div class="card-body">
+                <div class="performance-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <h5>Marks: <span class="badge badge-warning">{{ marks }}</span></h5>
+                    </div>
+                </div>
+                
+                <div class="performance-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div>
+                        <h5>Grade: <span class="grade-badge">{{ grade }}</span></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-message">
+                    <ul class="list-group">
+                    {% for category, message in messages %}
+                        <li class="list-group-item list-group-item-{{ category }}">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle mr-2"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle mr-2"></i>
+                            {% endif %}
+                            {{ message }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
