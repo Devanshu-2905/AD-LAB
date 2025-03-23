@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Natural Language Database Interaction with LLMs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --secondary-color: #d97706;
+            --background-color: #fffbeb;
+            --card-background: #ffffff;
+            --text-color: #422006;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --highlight-color: #fef3c7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem;
+            background-image: linear-gradient(to bottom right, #fffbeb, #fef3c7);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .query-card {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .query-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #fde68a;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            resize: vertical;
+            font-family: inherit;
+            background-color: #fffef6;
+        }
+
+        .query-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+            background-color: #ffffff;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .sql-query {
+            background-color: #422006;
+            color: #fef3c7;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            font-family: 'Monaco', 'Consolas', monospace;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            border-left: 4px solid #dc2626;
+            box-shadow: var(--shadow);
+        }
+
+        .results-table {
+            width: 100%;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid #fde68a;
+        }
+
+        .results-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background-color: var(--highlight-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 2px solid #f59e0b;
+        }
+
+        .results-table td {
+            padding: 1rem;
+            border-top: 1px solid #fde68a;
+        }
+
+        .results-table tr:hover {
+            background-color: #fffbeb;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #92400e;
+            font-style: italic;
+            background: #fffef6;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .query-card {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animation for new results */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-table {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        /* Custom yellow-themed scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #fffbeb;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Natural Language Database Interaction with LLMs</h1>
+        
+        <div class="query-card">
+            <form method="POST">
+                <textarea 
+                    name="natural_query" 
+                    class="query-input" 
+                    rows="3" 
+                    placeholder="Enter your query in natural language (e.g., 'show restaurants with rating above 4 stars')"
+                >{{ natural_query }}</textarea>
+                <button type="submit" class="submit-btn">Submit Query</button>
+            </form>
+        </div>
+
+        {% if sql_query %}
+        <div class="sql-query">
+            <strong>Generated SQL Query:</strong><br>
+            {{ sql_query }}
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if results %}
+            {% if results|length > 0 %}
+            <div class="results-table">
+                <table>
+                    <thead>
+                        <tr>
+                            {% for column in results[0].keys() %}
+                            <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in results %}
+                        <tr>
+                            {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-results">No results found for your query.</div>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
